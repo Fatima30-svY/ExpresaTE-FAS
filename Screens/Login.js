@@ -43,8 +43,7 @@ export default function LoginScreen({ navigation }) {
   };
 
   const handleAcceder = () => {
-    // Tu lógica de login aquí
-    console.log('Acceder:', usuario, contrasena);
+    // Se conectará con Firebase más adelante
   };
 
   const handleNoTengocuenta = () => {
