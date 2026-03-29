@@ -88,7 +88,7 @@ export default function Principal({ navigation, route }) {
         <View style={styles.registrarCard}>
           <Text style={styles.registrarTitulo}>Registrar cómo me siento hoy</Text>
           <Text style={styles.registrarSub}>Tómate un tiempo para ti</Text>
-          <TouchableOpacity style={styles.botonVamos}>
+          <TouchableOpacity style={styles.botonVamos} onPress={() => navigation.navigate('RegistroEmociones', route.params)}>
             <Text style={styles.botonVamosTexto}>¡Vamos!</Text>
           </TouchableOpacity>
         </View>
