@@ -16,7 +16,7 @@ import {
 
 const { width, height } = Dimensions.get('window');
 
-const logo = require('../assets/Icono.jpeg');
+const logo = require('../assets/Icono.png');
 
 export default function LoginScreen({ navigation }) {
   const [usuario, setUsuario] = useState('');
@@ -157,8 +157,6 @@ export default function LoginScreen({ navigation }) {
 
 const PURPLE_DARK = '#5B2D8E';
 const PURPLE_MID = '#7B3FA8';
-const PURPLE_LIGHT = '#9B59C2';
-const PURPLE_BORDER = '#C4A8E0';
 const BG = '#EEEAF5';
 const WHITE = '#FFFFFF';
 
@@ -175,44 +173,26 @@ const styles = StyleSheet.create({
     backgroundColor: BG,
     alignItems: 'center',
     paddingHorizontal: 32,
-    paddingTop: height * 0.08,
+    paddingTop: height * 0.06,
     paddingBottom: 40,
   },
-
-  // Logo
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   logoImage: {
-    width: 140,
-    height: 140,
+    width: width * 0.55,
+    height: width * 0.55,
     marginBottom: 0,
   },
-  logoText: {
-    fontSize: 17,
-    letterSpacing: 0.5,
-  },
-  logoNormal: {
-    color: '#333',
-    fontWeight: '400',
-  },
-  logoBold: {
-    color: PURPLE_DARK,
-    fontWeight: '800',
-  },
-
-  // Título
   bienvenida: {
     fontSize: 26,
     fontWeight: '800',
     color: PURPLE_MID,
     letterSpacing: 3,
     marginBottom: 36,
-    marginTop: 10,
+    marginTop: 8,
   },
-
-  // Formulario
   form: {
     width: '100%',
     gap: 16,
@@ -267,8 +247,6 @@ const styles = StyleSheet.create({
     color: '#888',
     fontWeight: '500',
   },
-
-  // Acciones
   actionsRow: {
     width: '100%',
     flexDirection: 'row',
