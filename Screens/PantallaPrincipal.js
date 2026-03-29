@@ -29,8 +29,12 @@ LocaleConfig.defaultLocale = 'es';
 const hoy = new Date().toISOString().split('T')[0];
 
 export default function Principal({ navigation, route }) {
-  const { nombre } = route.params || {};
+  const { nombre, correo, carrera, noCuenta, edad } = route.params || {};
   const [diaSeleccionado, setDiaSeleccionado] = useState(hoy);
+
+  const irAPerfil = () => {
+    navigation.navigate('Perfil', { nombre, correo, carrera, noCuenta, edad });
+  };
 
   return (
     <View style={styles.flex}>
@@ -115,7 +119,7 @@ export default function Principal({ navigation, route }) {
           <Ionicons name="clipboard-outline" size={24} color="#999" />
           <Text style={styles.tabLabel}>Registro</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
+        <TouchableOpacity style={styles.tabItem} onPress={irAPerfil}>
           <Ionicons name="person" size={24} color="#999" />
           <Text style={styles.tabLabel}>Perfil</Text>
         </TouchableOpacity>

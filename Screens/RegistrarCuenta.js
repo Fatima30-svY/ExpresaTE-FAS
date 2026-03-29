@@ -46,7 +46,7 @@ export default function RegisterScreen({ navigation }) {
     }
     // Aquí conectarás con Firebase más adelante
     alert('¡Cuenta creada exitosamente!');
-    navigation.navigate('PantallaPrincipal', { nombre: nombre });
+    navigation.navigate('PantallaPrincipal', { nombre, correo, carrera, noCuenta, edad });
   };
 
   return (
