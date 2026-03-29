@@ -10,6 +10,8 @@ import Finalizar from './Screens/UltimaPantalla.js';
 import SeccionScreen from './Screens/SeccionScreen';
 
 import Perfil from './Screens/Perfil.js';
+import RegistroEmociones from './Screens/RegistroEmociones.js';
+import SeccionSeguridad from './Screens/SeccionSeguridad.js';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +31,8 @@ export default function App() {
         <Stack.Screen name="Seccion3" component={SeccionScreen} />
         <Stack.Screen name="Finalizar" component={Finalizar} />
         <Stack.Screen name="Perfil" component={Perfil} />
+        <Stack.Screen name="RegistroEmociones" component={RegistroEmociones} />
+        <Stack.Screen name="SeccionSeguridad" component={SeccionSeguridad} />
       </Stack.Navigator>
     </NavigationContainer>
   );
