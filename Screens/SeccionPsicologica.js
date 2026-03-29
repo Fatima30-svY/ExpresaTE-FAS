@@ -10,10 +10,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 const PREGUNTAS = [
-  'Me siento segura dentro de mi institución.',
-  'Me siento cómoda al interactuar con mis compañeros/as.',
-  'Evito ciertos lugares por sentirme incómoda o insegura.',
-  'He percibido miradas o comportamientos que me incomodan.',
+  'He recibido comentarios que afectan mi bienestar emocional.',
+  'Alguien ha intentado hacerme sentir inferior.',
+  'He sido objeto de burlas o críticas constantes.',
+  'Me he sentido intimidada por la forma en que alguien me habla.',
 ];
 
 const ESCALA = [1, 2, 3, 4, 5];
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function SeccionSeguridad({ navigation, route }) {
+export default function SeccionPsicologica({ navigation, route }) {
   const [respuestas, setRespuestas] = useState({});
 
   const seleccionar = (preguntaIndex, valor) => {
@@ -158,7 +158,7 @@ export default function SeccionSeguridad({ navigation, route }) {
       alert('Por favor responde todas las preguntas.');
       return;
     }
-    navigation.navigate('SeccionPsicologica', route.params);
+    navigation.navigate('SeccionAcoso', route.params);
   };
 
   return (
@@ -167,7 +167,7 @@ export default function SeccionSeguridad({ navigation, route }) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={PURPLE} />
         </TouchableOpacity>
-        <Text style={styles.headerTitulo}>Sección 1: Seguridad</Text>
+        <Text style={styles.headerTitulo}>Seccion 2: Psicologica</Text>
       </View>
 
       <ScrollView
