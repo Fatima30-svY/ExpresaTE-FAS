@@ -9,8 +9,39 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+const SECCIONES = {
+  SeccionControl: {
+    titulo: 'Sección 4: Control',
+    preguntas: [
+      'Alguien intenta influir en mis decisiones personales.',
+      'Me han presionado para hacer cosas que no quiero.',
+      'Siento que mi privacidad ha sido invadida (celular, redes, etc.).',
+    ],
+    siguiente: 'SeccionFisica',
+  },
+  SeccionFisica: {
+    titulo: 'Sección 5: Física',
+    preguntas: [
+      'He experimentado contacto físico que me hizo sentir incómoda o en riesgo.',
+      'He sentido miedo de que alguien pueda hacerme daño.',
+      'He estado en situaciones donde no me sentí libre de decidir.',
+    ],
+    siguiente: 'SeccionApoyo',
+  },
+  SeccionApoyo: {
+    titulo: 'Sección 6: Apoyo',
+    preguntas: [
+      'Siento que tengo a alguien en quien confiar si tengo un problema.',
+      'Me gustaría recibir apoyo o hablar con alguien sobre mi situación.',
+    ],
+    siguiente: 'UltimaPantalla',
+  },
+};
+
 export default function SeccionScreen({ navigation, route }) {
-  const { titulo, preguntas, siguiente } = route.params;
+  const nombreSeccion = route.name;
+  const seccion = SECCIONES[nombreSeccion] || {};
+  const { titulo = '', preguntas = [], siguiente = '' } = seccion;
 
   const [respuestas, setRespuestas] = useState(
     Array(preguntas.length).fill(null)
@@ -27,13 +58,12 @@ export default function SeccionScreen({ navigation, route }) {
       alert('Por favor responde todas las preguntas.');
       return;
     }
-    navigation.navigate(siguiente, { respuestas });
+    navigation.navigate(siguiente);
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
 
-      {/* Encabezado */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#7C3DB8" />
@@ -41,7 +71,6 @@ export default function SeccionScreen({ navigation, route }) {
         <Text style={styles.titulo}>{titulo}</Text>
       </View>
 
-      {/* Escala */}
       <View style={styles.escalaCard}>
         <Text style={styles.escalaTitle}>Escala de respuesta</Text>
         <View style={styles.escalaGrid}>
@@ -53,7 +82,6 @@ export default function SeccionScreen({ navigation, route }) {
         </View>
       </View>
 
-      {/* Preguntas */}
       {preguntas.map((pregunta, qi) => (
         <View key={qi} style={styles.preguntaCard}>
           <Text style={styles.preguntaTexto}>Pregunta {qi + 1}. {pregunta}</Text>
@@ -61,10 +89,6 @@ export default function SeccionScreen({ navigation, route }) {
             {[1, 2, 3, 4, 5].map((val) => (
               <TouchableOpacity
                 key={val}
-                style={[
-                  styles.opcion,
-                  respuestas[qi] === val && styles.opcionSeleccionada,
-                ]}
                 onPress={() => seleccionar(qi, val)}
               >
                 <View style={[
@@ -83,7 +107,6 @@ export default function SeccionScreen({ navigation, route }) {
         </View>
       ))}
 
-      {/* Botón */}
       <TouchableOpacity style={styles.boton} onPress={handleSiguiente}>
         <Text style={styles.botonTexto}>Siguiente</Text>
       </TouchableOpacity>
@@ -156,10 +179,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  opcion: {
-    alignItems: 'center',
-    gap: 4,
-  },
   radio: {
     width: 26,
     height: 26,
@@ -168,6 +187,7 @@ const styles = StyleSheet.create({
     borderColor: '#C0A0E0',
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 4,
   },
   radioSeleccionado: {
     borderColor: '#7C3DB8',
@@ -181,6 +201,7 @@ const styles = StyleSheet.create({
   opcionTexto: {
     fontSize: 12,
     color: '#9B72CF',
+    textAlign: 'center',
   },
   opcionTextoSel: {
     color: '#7C3DB8',

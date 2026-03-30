@@ -152,15 +152,13 @@ export default function SeccionAcoso({ navigation, route }) {
   const seleccionar = (preguntaIndex, valor) => {
     setRespuestas((prev) => ({ ...prev, [preguntaIndex]: valor }));
   };
-
-  const handleSiguiente = () => {
-    if (Object.keys(respuestas).length < PREGUNTAS.length) {
-      alert('Por favor responde todas las preguntas.');
-      return;
-    }
-    console.log('Respuestas Acoso:', respuestas);
-  };
-
+const handleSiguiente = () => {
+  if (Object.keys(respuestas).length < PREGUNTAS.length) {
+    alert('Por favor responde todas las preguntas.');
+    return;
+  }
+  navigation.navigate('SeccionControl');
+};
   return (
     <View style={styles.flex}>
       <View style={styles.header}>

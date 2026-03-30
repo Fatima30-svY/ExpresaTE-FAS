@@ -15,7 +15,7 @@ const FRASES = [
   '"Pedir ayuda es un acto de valentía."',
 ];
 
-export default function Finalizar({ navigation }) {
+export default function Finalizar({ navigation, route }) {
   const frase = FRASES[Math.floor(Math.random() * FRASES.length)];
 
   return (
@@ -23,7 +23,7 @@ export default function Finalizar({ navigation }) {
 
       {/* Logo */}
       <Image
-        source={require('../assets/Icono.jpeg')}
+        source={require('../assets/Icono.png')}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -46,7 +46,7 @@ export default function Finalizar({ navigation }) {
       {/* Botón Finalizar */}
       <TouchableOpacity
         style={styles.boton}
-        onPress={() => navigation.navigate('Home')}
+        onPress={() => navigation.navigate('PantallaPrincipal')}
       >
         <Text style={styles.botonTexto}>Finalizar</Text>
       </TouchableOpacity>
