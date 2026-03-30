@@ -157,7 +157,7 @@ const handleSiguiente = () => {
     alert('Por favor responde todas las preguntas.');
     return;
   }
-  navigation.navigate('SeccionControl');
+ navigation.navigate('SeccionControl', route.params);
 };
   return (
     <View style={styles.flex}>

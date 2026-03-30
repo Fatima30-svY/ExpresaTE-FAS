@@ -15,46 +15,6 @@ const FRASES = [
   '"Pedir ayuda es un acto de valentía."',
 ];
 
-export default function Finalizar({ navigation, route }) {
-  const frase = FRASES[Math.floor(Math.random() * FRASES.length)];
-
-  return (
-    <View style={styles.container}>
-
-      {/* Logo */}
-      <Image
-        source={require('../assets/Icono.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-      <Text style={styles.logoTexto}>ExpresaTE-SVB</Text>
-
-      {/* Frase motivacional */}
-      <View style={styles.fraseCard}>
-        <Text style={styles.fraseTexto}>{frase}</Text>
-      </View>
-
-      {/* Mensaje de confirmación */}
-      <View style={styles.mensajeCard}>
-        <Text style={styles.mensajeTitulo}>¡Gracias por responder!</Text>
-        <Text style={styles.mensajeTexto}>
-          Tus respuestas fueron almacenadas y enviadas al área correspondiente.
-          Recuerda que no estás sola.
-        </Text>
-      </View>
-
-      {/* Botón Finalizar */}
-      <TouchableOpacity
-        style={styles.boton}
-        onPress={() => navigation.navigate('PantallaPrincipal')}
-      >
-        <Text style={styles.botonTexto}>Finalizar</Text>
-      </TouchableOpacity>
-
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -128,3 +88,39 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+export default function Finalizar({ navigation, route }) {
+  const frase = FRASES[Math.floor(Math.random() * FRASES.length)];
+
+  return (
+    <View style={styles.container}>
+
+      <Image
+        source={require('../assets/Icono.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+      <Text style={styles.logoTexto}>ExpresaTE-SVB</Text>
+
+      <View style={styles.fraseCard}>
+        <Text style={styles.fraseTexto}>{frase}</Text>
+      </View>
+
+      <View style={styles.mensajeCard}>
+        <Text style={styles.mensajeTitulo}>¡Gracias por responder!</Text>
+        <Text style={styles.mensajeTexto}>
+          Tus respuestas fueron almacenadas y enviadas al área correspondiente.
+          Recuerda que no estás sola.
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        style={styles.boton}
+        onPress={() => navigation.navigate('PantallaPrincipal', route.params)}
+      >
+        <Text style={styles.botonTexto}>Finalizar</Text>
+      </TouchableOpacity>
+
+    </View>
+  );
+}

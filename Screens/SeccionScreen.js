@@ -58,7 +58,7 @@ export default function SeccionScreen({ navigation, route }) {
       alert('Por favor responde todas las preguntas.');
       return;
     }
-    navigation.navigate(siguiente);
+    navigation.navigate(siguiente, route.params);
   };
 
   return (
