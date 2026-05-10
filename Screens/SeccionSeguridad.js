@@ -158,7 +158,13 @@ export default function SeccionSeguridad({ navigation, route }) {
       alert('Por favor responde todas las preguntas.');
       return;
     }
-    navigation.navigate('SeccionPsicologica', route.params);
+    const puntosDeEstaPantalla = Object.values(respuestas).reduce((suma, valor) => suma + valor, 0);
+    const puntosAcumulados = (route.params?.puntosTotales || 0) + puntosDeEstaPantalla;
+
+    navigation.navigate('SeccionPsicologica', { 
+      ...route.params, 
+      puntosTotales: puntosAcumulados 
+    });
   };
 
   return (

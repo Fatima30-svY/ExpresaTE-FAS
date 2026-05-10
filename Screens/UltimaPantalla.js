@@ -89,8 +89,16 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function Finalizar({ navigation, route }) {
+export default function UltimaPantalla({ navigation }) {
   const frase = FRASES[Math.floor(Math.random() * FRASES.length)];
+
+  const handleFinalizar = () => {
+    // Esto limpia el historial y te regresa al inicio correctamente
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'PantallaPrincipal' }],
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -109,16 +117,15 @@ export default function Finalizar({ navigation, route }) {
       <View style={styles.mensajeCard}>
         <Text style={styles.mensajeTitulo}>¡Gracias por responder!</Text>
         <Text style={styles.mensajeTexto}>
-          Tus respuestas fueron almacenadas y enviadas al área correspondiente.
-          Recuerda que no estás sola.
+          Tus respuestas fueron almacenadas. Recuerda que no estás sola.
         </Text>
       </View>
 
       <TouchableOpacity
         style={styles.boton}
-        onPress={() => navigation.navigate('PantallaPrincipal', route.params)}
+        onPress={handleFinalizar}
       >
-        <Text style={styles.botonTexto}>Finalizar</Text>
+        <Text style={styles.botonTexto}>Ir al Inicio</Text>
       </TouchableOpacity>
 
     </View>

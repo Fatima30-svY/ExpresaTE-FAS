@@ -153,12 +153,18 @@ export default function SeccionAcoso({ navigation, route }) {
     setRespuestas((prev) => ({ ...prev, [preguntaIndex]: valor }));
   };
 const handleSiguiente = () => {
-  if (Object.keys(respuestas).length < PREGUNTAS.length) {
-    alert('Por favor responde todas las preguntas.');
-    return;
-  }
- navigation.navigate('SeccionControl', route.params);
-};
+    if (Object.keys(respuestas).length < PREGUNTAS.length) {
+      alert('Por favor responde todas las preguntas.');
+      return;
+    }
+    const puntosDeEstaPantalla = Object.values(respuestas).reduce((suma, valor) => suma + valor, 0);
+    const puntosAcumulados = (route.params?.puntosTotales || 0) + puntosDeEstaPantalla;
+
+    navigation.navigate('SeccionControl', { 
+      ...route.params, 
+      puntosTotales: puntosAcumulados 
+    });
+  };
   return (
     <View style={styles.flex}>
       <View style={styles.header}>

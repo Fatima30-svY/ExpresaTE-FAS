@@ -166,12 +166,17 @@ export default function RegistroEmociones({ navigation, route }) {
   const [emocionSeleccionada, setEmocionSeleccionada] = useState(null);
   const [involucradoSeleccionado, setInvolucradoSeleccionado] = useState(null);
 
-  const handleSiguiente = () => {
+ const handleSiguiente = () => {
     if (!emocionSeleccionada || !involucradoSeleccionado) {
       alert('Por favor selecciona una opción en cada pregunta.');
       return;
     }
-    navigation.navigate('SeccionSeguridad', route.params);
+    // Pasamos los datos iniciales y los puntos en 0
+    navigation.navigate('SeccionSeguridad', { 
+      emocion: emocionSeleccionada,
+      involucrado: involucradoSeleccionado,
+      puntosTotales: 0 
+    });
   };
 
   return (

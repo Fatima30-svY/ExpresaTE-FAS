@@ -115,7 +115,7 @@ export default function Principal({ navigation, route }) {
           <Ionicons name="home" size={24} color="#7C3DB8" />
           <Text style={[styles.tabLabel, styles.tabActivo]}>Inicio</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('MisReportes', route.params)}>
           <Ionicons name="clipboard-outline" size={24} color="#999" />
           <Text style={styles.tabLabel}>Registro</Text>
         </TouchableOpacity>

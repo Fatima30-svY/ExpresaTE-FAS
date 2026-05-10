@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from 'react';
 import {
   View,
@@ -6,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   Platform,
+  Alert, // <-- Agregamos el Alert nativo
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -46,6 +48,9 @@ export default function SeccionScreen({ navigation, route }) {
   const [respuestas, setRespuestas] = useState(
     Array(preguntas.length).fill(null)
   );
+  
+  // Candado de seguridad para evitar "Doble Tap"
+  const [cargando, setCargando] = useState(false);
 
   const seleccionar = (preguntaIndex, valor) => {
     const nuevas = [...respuestas];
@@ -53,17 +58,69 @@ export default function SeccionScreen({ navigation, route }) {
     setRespuestas(nuevas);
   };
 
-  const handleSiguiente = () => {
+  const handleSiguiente = async () => {
+    // Si ya está procesando, ignoramos otros toques al botón
+    if (cargando) return;
+
     if (respuestas.includes(null)) {
-      alert('Por favor responde todas las preguntas.');
+      Alert.alert('Atención', 'Por favor responde todas las preguntas.');
       return;
     }
-    navigation.navigate(siguiente, route.params);
+
+    // Bloqueamos el botón
+    setCargando(true);
+
+    const puntosDeEstaPantalla = respuestas.reduce((suma, valor) => suma + valor, 0);
+    const puntosAcumulados = (route.params?.puntosTotales || 0) + puntosDeEstaPantalla;
+
+    if (siguiente === 'UltimaPantalla') {
+      try {
+        const PUNTAJE_MAXIMO = 100;
+        const porcentajeFinal = Math.round((puntosAcumulados / PUNTAJE_MAXIMO) * 100);
+        const estadoAnimoTexto = route.params?.emocion || 'No definido';
+        
+        const fechaHoy = new Date().toISOString().split('T')[0];
+
+        const nuevoReporte = {
+          fecha: fechaHoy,
+          estadoAnimo: estadoAnimoTexto,
+          porcentaje: porcentajeFinal
+        };
+
+        const reportesAnteriores = await AsyncStorage.getItem('@mis_reportes');
+        let lista = reportesAnteriores ? JSON.parse(reportesAnteriores) : [];
+
+        const indiceHoy = lista.findIndex(reporte => reporte.fecha === fechaHoy);
+
+        if (indiceHoy !== -1) {
+          lista[indiceHoy] = nuevoReporte;
+        } else {
+          lista.push(nuevoReporte);
+        }
+
+        lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+        await AsyncStorage.setItem('@mis_reportes', JSON.stringify(lista));
+
+        navigation.navigate('UltimaPantalla', route.params);
+
+      } catch (error) {
+        console.error('Error guardando:', error);
+        Alert.alert('Error', 'Hubo un error guardando tus respuestas');
+      } finally {
+        setCargando(false); // Desbloqueamos por si acaso
+      }
+    } else {
+      // Usamos push en lugar de navigate cuando vamos a componentes iguales
+      navigation.push(siguiente, { 
+        ...route.params, 
+        puntosTotales: puntosAcumulados 
+      });
+      setCargando(false);
+    }
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#7C3DB8" />
@@ -107,116 +164,36 @@ export default function SeccionScreen({ navigation, route }) {
         </View>
       ))}
 
-      <TouchableOpacity style={styles.boton} onPress={handleSiguiente}>
-        <Text style={styles.botonTexto}>Siguiente</Text>
+      <TouchableOpacity 
+        style={[styles.boton, cargando && { opacity: 0.7 }]} 
+        onPress={handleSiguiente}
+        disabled={cargando}
+      >
+        <Text style={styles.botonTexto}>
+          {cargando ? 'Procesando...' : (siguiente === 'UltimaPantalla' ? 'Finalizar Cuestionario' : 'Siguiente')}
+        </Text>
       </TouchableOpacity>
-
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F0FA',
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 16,
-    marginTop: Platform.OS === 'android' ? 10 : 0,
-  },
-  titulo: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#7C3DB8',
-  },
-  escalaCard: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#D4BBEE',
-    padding: 14,
-    marginBottom: 16,
-  },
-  escalaTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#5C3D8A',
-    marginBottom: 8,
-  },
-  escalaGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
-  },
-  escalaItem: {
-    fontSize: 12,
-    color: '#7A5AA0',
-    width: '48%',
-  },
-  preguntaCard: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#D4BBEE',
-    padding: 14,
-    marginBottom: 12,
-  },
-  preguntaTexto: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#3C2066',
-    marginBottom: 14,
-    lineHeight: 20,
-  },
-  opcionesRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  radio: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 2,
-    borderColor: '#C0A0E0',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  radioSeleccionado: {
-    borderColor: '#7C3DB8',
-  },
-  radioDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#7C3DB8',
-  },
-  opcionTexto: {
-    fontSize: 12,
-    color: '#9B72CF',
-    textAlign: 'center',
-  },
-  opcionTextoSel: {
-    color: '#7C3DB8',
-    fontWeight: '600',
-  },
-  boton: {
-    marginTop: 8,
-    backgroundColor: '#7C3DB8',
-    borderRadius: 12,
-    paddingVertical: 13,
-    alignItems: 'center',
-  },
-  botonTexto: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  container: { flex: 1, backgroundColor: '#F5F0FA' },
+  content: { padding: 20, paddingBottom: 40 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16, marginTop: Platform.OS === 'android' ? 10 : 0 },
+  titulo: { fontSize: 18, fontWeight: '600', color: '#7C3DB8' },
+  escalaCard: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#D4BBEE', padding: 14, marginBottom: 16 },
+  escalaTitle: { fontSize: 12, fontWeight: '600', color: '#5C3D8A', marginBottom: 8 },
+  escalaGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
+  escalaItem: { fontSize: 12, color: '#7A5AA0', width: '48%' },
+  preguntaCard: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#D4BBEE', padding: 14, marginBottom: 12 },
+  preguntaTexto: { fontSize: 13, fontWeight: '500', color: '#3C2066', marginBottom: 14, lineHeight: 20 },
+  opcionesRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  radio: { width: 26, height: 26, borderRadius: 13, borderWidth: 2, borderColor: '#C0A0E0', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  radioSeleccionado: { borderColor: '#7C3DB8' },
+  radioDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#7C3DB8' },
+  opcionTexto: { fontSize: 12, color: '#9B72CF', textAlign: 'center' },
+  opcionTextoSel: { color: '#7C3DB8', fontWeight: '600' },
+  boton: { marginTop: 8, backgroundColor: '#7C3DB8', borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
+  botonTexto: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

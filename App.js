@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './Screens/Login.js';
 import RegistrarCuenta from './Screens/RegistrarCuenta.js';
 import PantallaPrincipal from './Screens/PantallaPrincipal.js';
+import MisReportes from './Screens/MisReportes.js';
 import Perfil from './Screens/Perfil.js';
 import RegistroEmociones from './Screens/RegistroEmociones.js';
 import SeccionSeguridad from './Screens/SeccionSeguridad.js';
@@ -18,14 +19,12 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Login"
-        screenOptions={{ headerShown: false }}
-      >
+      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="RegistrarCuenta" component={RegistrarCuenta} />
         <Stack.Screen name="PantallaPrincipal" component={PantallaPrincipal} />
         <Stack.Screen name="Perfil" component={Perfil} />
+        <Stack.Screen name="MisReportes" component={MisReportes} />
         <Stack.Screen name="RegistroEmociones" component={RegistroEmociones} />
         <Stack.Screen name="SeccionControl" component={SeccionScreen} />
         <Stack.Screen name="SeccionFisica" component={SeccionScreen} />
