@@ -2,26 +2,25 @@
   "expo": {
     "name": "ExpresaTE-SVB",
     "slug": "ExpresaTE-SVB",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo_expresatesvb.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/logo_expresatesvb.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F5F0FA"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/logo_expresatesvb.png",
+        "backgroundColor": "#F5F0FA"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.watatsuki_dev.ExpresaTESVB"
+      "package": "com.watatsuki_dev.ExpresaTESVB",
+      "versionCode": 3
     },
     "web": {
       "favicon": "./assets/favicon.png"

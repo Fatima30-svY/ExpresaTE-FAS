@@ -12,11 +12,32 @@ import {
   Platform,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
+import { supabase } from '../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
 const logo = require('../assets/Icono.png');
+
+// Traduce los errores técnicos de Supabase a mensajes claros en español.
+// Nota: Supabase nunca distingue "usuario incorrecto" de "contraseña
+// incorrecta" — por seguridad, ambos casos regresan el mismo error
+// genérico, para que nadie pueda usar el mensaje para adivinar qué
+// correos existen en el sistema. Por eso el mensaje habla de los dos
+// juntos en vez de señalar cuál específicamente falló.
+const traducirErrorLogin = (error) => {
+  const mensaje = error?.message || '';
+
+  if (mensaje.includes('Invalid login credentials')) {
+    return 'Correo o contraseña incorrectos. Verifica tus datos e intenta de nuevo.';
+  }
+  if (mensaje.includes('Network request failed')) {
+    return 'No se pudo conectar. Revisa tu conexión a internet e intenta de nuevo.';
+  }
+
+  return 'No se pudo iniciar sesión. Intenta de nuevo en unos momentos.';
+};
 
 export default function LoginScreen({ navigation }) {
   const [usuario, setUsuario] = useState('');
@@ -24,6 +45,7 @@ export default function LoginScreen({ navigation }) {
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
   const [usuarioFocused, setUsuarioFocused] = useState(false);
   const [contrasenaFocused, setContrasenaFocused] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const buttonScale = useRef(new Animated.Value(1)).current;
 
@@ -42,8 +64,27 @@ export default function LoginScreen({ navigation }) {
     }).start();
   };
 
-  const handleAcceder = () => {
-    // Se conectará con Firebase más adelante
+  const handleAcceder = async () => {
+    if (!usuario || !contrasena) {
+      alert('Ingresa tu correo y tu contraseña.');
+      return;
+    }
+
+    setLoading(true);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: usuario,
+      password: contrasena,
+    });
+
+    setLoading(false);
+
+    if (error) {
+      alert(traducirErrorLogin(error));
+      return;
+    }
+
+    navigation.navigate('PantallaPrincipal');
   };
 
   const handleNoTengocuenta = () => {
@@ -144,8 +185,13 @@ export default function LoginScreen({ navigation }) {
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
                 activeOpacity={1}
+                disabled={loading}
               >
-                <Text style={styles.botonTexto}>Acceder</Text>
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.botonTexto}>Acceder</Text>
+                )}
               </TouchableOpacity>
             </Animated.View>
           </View>

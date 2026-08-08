@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,8 +6,11 @@ import {
   StyleSheet,
   ScrollView,
   Platform,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../lib/supabase';
 
 const EMOCIONES = ['Feliz', 'Triste', 'Ansiosa', 'Enojada', 'Neutral'];
 
@@ -162,20 +165,102 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function RegistroEmociones({ navigation, route }) {
+export default function RegistroEmociones({ navigation }) {
   const [emocionSeleccionada, setEmocionSeleccionada] = useState(null);
   const [involucradoSeleccionado, setInvolucradoSeleccionado] = useState(null);
+  const [idEvaluacion, setIdEvaluacion] = useState(null);
+  const [creandoEvaluacion, setCreandoEvaluacion] = useState(true);
 
- const handleSiguiente = () => {
+  // Al entrar a esta pantalla (primer paso del flujo), se crea la evaluacion
+  useEffect(() => {
+    crearEvaluacion();
+  }, []);
+
+  const crearEvaluacion = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigation.navigate('Login');
+      return;
+    }
+
+    // buscamos el id_usuario (de la tabla usuario) que corresponde a este auth_id
+    const { data: usuario, error: errUsuario } = await supabase
+      .from('usuario')
+      .select('id_usuario')
+      .eq('auth_id', user.id)
+      .single();
+
+    if (errUsuario) {
+      alert('No se pudo identificar tu usuario: ' + errUsuario.message);
+      setCreandoEvaluacion(false);
+      return;
+    }
+
+    const { data: evaluacion, error: errEvaluacion } = await supabase
+      .from('evaluacion')
+      .insert({ id_usuario: usuario.id_usuario })
+      .select('id_evaluacion')
+      .single();
+
+    if (errEvaluacion) {
+      alert('No se pudo iniciar la evaluación: ' + errEvaluacion.message);
+      setCreandoEvaluacion(false);
+      return;
+    }
+
+    setIdEvaluacion(evaluacion.id_evaluacion);
+    setCreandoEvaluacion(false);
+  };
+
+  // Avisa antes de salir (botón atrás, gesto o botón físico) si ya hay
+  // algo contestado o la evaluación ya se creó, para no perder el progreso sin querer.
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      // Solo nos interesa un "atrás" de verdad (botón, gesto, swipe).
+      // Un reset (como el que hace UltimaPantalla al terminar el cuestionario)
+      // no debe disparar esta alerta.
+      if (e.data.action.type !== 'GO_BACK') {
+        return;
+      }
+      const hayProgreso = emocionSeleccionada || involucradoSeleccionado || idEvaluacion;
+      if (!hayProgreso) {
+        return;
+      }
+      e.preventDefault();
+      Alert.alert(
+        '¿Salir del cuestionario?',
+        'Si sales ahora, perderás las respuestas que ya diste.',
+        [
+          { text: 'Cancelar', style: 'cancel', onPress: () => {} },
+          {
+            text: 'Salir',
+            style: 'destructive',
+            onPress: () => navigation.dispatch(e.data.action),
+          },
+        ]
+      );
+    });
+
+    return unsubscribe;
+  }, [navigation, emocionSeleccionada, involucradoSeleccionado, idEvaluacion]);
+
+  const handleSiguiente = () => {
     if (!emocionSeleccionada || !involucradoSeleccionado) {
       alert('Por favor selecciona una opción en cada pregunta.');
       return;
     }
-    // Pasamos los datos iniciales y los puntos en 0
-    navigation.navigate('SeccionSeguridad', { 
-      emocion: emocionSeleccionada,
-      involucrado: involucradoSeleccionado,
-      puntosTotales: 0 
+    if (!idEvaluacion) {
+      alert('Un momento, todavía se está preparando tu evaluación.');
+      return;
+    }
+    // Arrastramos el id_evaluacion + las respuestas acumuladas hasta ahora
+    navigation.navigate('SeccionSeguridad', {
+      idEvaluacion,
+      respuestas: [
+        { pregunta: 'emocion', valor: emocionSeleccionada },
+        { pregunta: 'involucrado', valor: involucradoSeleccionado },
+      ],
+      puntosTotales: 0,
     });
   };
 
@@ -244,8 +329,12 @@ export default function RegistroEmociones({ navigation, route }) {
       </ScrollView>
 
       <View style={styles.botonWrapper}>
-        <TouchableOpacity style={styles.botonSiguiente} onPress={handleSiguiente}>
-          <Text style={styles.botonTexto}>Siguiente</Text>
+        <TouchableOpacity style={styles.botonSiguiente} onPress={handleSiguiente} disabled={creandoEvaluacion}>
+          {creandoEvaluacion ? (
+            <ActivityIndicator color={WHITE} />
+          ) : (
+            <Text style={styles.botonTexto}>Siguiente</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,36 +7,58 @@ import {
   StyleSheet,
   ScrollView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
-
-const CARRERAS = [
-  'Ingeniería en Sistemas Computacionales',
-  'Ingeniería Eléctrica',
-  'Ingeniería Industrial',
-  'Ingeniería Forestal',
-  'Ingeniería Mecatrónica',
-  'Lic. Arquitectura',
-  'Lic. Gastronomía',
-  'Lic. Turismo',
-  'Lic. Administración',
-  'Ingeniería Civil',
-];
+import { supabase } from '../lib/supabase';
 
 export default function RegisterScreen({ navigation }) {
   const [nombre, setNombre] = useState('');
+  const [apellidoPaterno, setApellidoPaterno] = useState('');
+  const [apellidoMaterno, setApellidoMaterno] = useState('');
   const [correo, setCorreo] = useState('');
-  const [carrera, setCarrera] = useState('');
+  const [carreraId, setCarreraId] = useState('');
+  const [semestreId, setSemestreId] = useState('');
   const [noCuenta, setNoCuenta] = useState('');
   const [edad, setEdad] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = () => {
-    if (!correo || !carrera || !noCuenta || !edad || !password || !confirmPassword) {
+  // catálogos que vienen de la base, no hardcodeados
+  const [carreras, setCarreras] = useState([]);
+  const [semestres, setSemestres] = useState([]);
+
+  useEffect(() => {
+    cargarCatalogos();
+  }, []);
+
+  const cargarCatalogos = async () => {
+    const { data: dataCarreras, error: errCarreras } = await supabase
+      .from('carrera')
+      .select('id_carrera, nombre')
+      .order('id_carrera');
+
+    const { data: dataSemestres, error: errSemestres } = await supabase
+      .from('semestre')
+      .select('id_semestre, numero')
+      .order('id_semestre');
+
+    if (errCarreras || errSemestres) {
+      console.log('ERROR CARRERAS:', JSON.stringify(errCarreras, null, 2));
+      console.log('ERROR SEMESTRES:', JSON.stringify(errSemestres, null, 2));
+      alert('No se pudieron cargar carreras/semestres. Revisa tu conexión.');
+      return;
+    }
+    setCarreras(dataCarreras);
+    setSemestres(dataSemestres);
+  };
+
+  const handleRegister = async () => {
+    if (!nombre || !apellidoPaterno || !apellidoMaterno || !correo || !carreraId || !semestreId || !noCuenta || !edad || !password || !confirmPassword) {
       alert('Por favor completa todos los campos obligatorios.');
       return;
     }
@@ -44,9 +66,44 @@ export default function RegisterScreen({ navigation }) {
       alert('Las contraseñas no coinciden.');
       return;
     }
-    // Aquí conectarás con Firebase más adelante
-    alert('¡Cuenta creada exitosamente!');
-    navigation.navigate('PantallaPrincipal', { nombre, correo, carrera, noCuenta, edad });
+
+    setLoading(true);
+
+    // 1. Crear la cuenta de autenticación en Supabase
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: correo,
+      password: password,
+    });
+
+    if (authError) {
+      setLoading(false);
+      alert(authError.message);
+      return;
+    }
+
+    // 2. Crear el registro en la tabla usuario, ligado al auth_id
+    const { error: insertError } = await supabase.from('usuario').insert({
+      nombre: nombre,
+      apellido_paterno: apellidoPaterno,
+      apellido_materno: apellidoMaterno,
+      no_control: noCuenta,
+      correo: correo,
+      edad: edad,
+      id_carrera: carreraId,
+      id_semestre: semestreId,
+      auth_id: authData.user.id,
+      password: '', // la contraseña real vive en Supabase Auth, aquí solo se cumple el NOT NULL
+    });
+
+    setLoading(false);
+
+    if (insertError) {
+      alert('Se creó tu cuenta, pero hubo un problema guardando tus datos: ' + insertError.message);
+      return;
+    }
+
+    alert('¡Cuenta creada exitosamente! Revisa tu correo para confirmar tu cuenta.');
+    navigation.navigate('PantallaPrincipal');
   };
 
   return (
@@ -61,13 +118,33 @@ export default function RegisterScreen({ navigation }) {
       </View>
 
       {/* Nombre */}
-      <Text style={styles.label}>Nombre <Text style={styles.opcional}>(Opcional)</Text></Text>
+      <Text style={styles.label}>Nombre</Text>
       <TextInput
         style={styles.input}
-        placeholder="Ej. Fatima Sánchez"
+        placeholder="Ej. Fátima"
         placeholderTextColor="#C0A0E0"
         value={nombre}
         onChangeText={setNombre}
+      />
+
+      {/* Apellido paterno */}
+      <Text style={styles.label}>Apellido paterno</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ej. Sánchez"
+        placeholderTextColor="#C0A0E0"
+        value={apellidoPaterno}
+        onChangeText={setApellidoPaterno}
+      />
+
+      {/* Apellido materno */}
+      <Text style={styles.label}>Apellido materno</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ej. Gómez"
+        placeholderTextColor="#C0A0E0"
+        value={apellidoMaterno}
+        onChangeText={setApellidoMaterno}
       />
 
       {/* Correo */}
@@ -86,14 +163,30 @@ export default function RegisterScreen({ navigation }) {
       <Text style={styles.label}>Carrera</Text>
       <View style={styles.pickerWrapper}>
         <Picker
-          selectedValue={carrera}
-          onValueChange={(val) => setCarrera(val)}
+          selectedValue={carreraId}
+          onValueChange={(val) => setCarreraId(val)}
           style={styles.picker}
           dropdownIconColor="#7C3DB8"
         >
           <Picker.Item label="Selecciona tu carrera" value="" color="#C0A0E0" />
-          {CARRERAS.map((c) => (
-            <Picker.Item key={c} label={c} value={c} color="#2D1A4A" />
+          {carreras.map((c) => (
+            <Picker.Item key={c.id_carrera} label={c.nombre} value={c.id_carrera} color="#2D1A4A" />
+          ))}
+        </Picker>
+      </View>
+
+      {/* Semestre */}
+      <Text style={styles.label}>Semestre</Text>
+      <View style={styles.pickerWrapper}>
+        <Picker
+          selectedValue={semestreId}
+          onValueChange={(val) => setSemestreId(val)}
+          style={styles.picker}
+          dropdownIconColor="#7C3DB8"
+        >
+          <Picker.Item label="Selecciona tu semestre" value="" color="#C0A0E0" />
+          {semestres.map((s) => (
+            <Picker.Item key={s.id_semestre} label={`${s.numero}° semestre`} value={s.id_semestre} color="#2D1A4A" />
           ))}
         </Picker>
       </View>
@@ -153,8 +246,12 @@ export default function RegisterScreen({ navigation }) {
       </View>
 
       {/* Botón */}
-      <TouchableOpacity style={styles.boton} onPress={handleRegister}>
-        <Text style={styles.botonTexto}>Registrar</Text>
+      <TouchableOpacity style={styles.boton} onPress={handleRegister} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.botonTexto}>Registrar</Text>
+        )}
       </TouchableOpacity>
 
     </ScrollView>
