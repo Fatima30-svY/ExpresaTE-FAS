@@ -8,6 +8,7 @@ import {
   ScrollView,
   Platform,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,6 +28,8 @@ export default function RegisterScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
+  const [mostrarConsentimiento, setMostrarConsentimiento] = useState(true);
 
   // catálogos que vienen de la base, no hardcodeados
   const [carreras, setCarreras] = useState([]);
@@ -35,6 +38,15 @@ export default function RegisterScreen({ navigation }) {
   useEffect(() => {
     cargarCatalogos();
   }, []);
+
+  const handleAceptarConsentimiento = () => {
+    setAceptaTerminos(true);
+    setMostrarConsentimiento(false);
+  };
+
+  const handleNoAceptarConsentimiento = () => {
+    navigation.goBack();
+  };
 
   const cargarCatalogos = async () => {
     const { data: dataCarreras, error: errCarreras } = await supabase
@@ -64,6 +76,10 @@ export default function RegisterScreen({ navigation }) {
     }
     if (password !== confirmPassword) {
       alert('Las contraseñas no coinciden.');
+      return;
+    }
+    if (!aceptaTerminos) {
+      alert('Debes aceptar el uso de tus datos para poder crear tu cuenta.');
       return;
     }
 
@@ -102,11 +118,12 @@ export default function RegisterScreen({ navigation }) {
       return;
     }
 
-    alert('¡Cuenta creada exitosamente! Revisa tu correo para confirmar tu cuenta.');
+    alert('¡Cuenta creada exitosamente!');
     navigation.navigate('PantallaPrincipal');
   };
 
   return (
+    <>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
 
       {/* Encabezado */}
@@ -246,7 +263,11 @@ export default function RegisterScreen({ navigation }) {
       </View>
 
       {/* Botón */}
-      <TouchableOpacity style={styles.boton} onPress={handleRegister} disabled={loading}>
+      <TouchableOpacity
+        style={styles.boton}
+        onPress={handleRegister}
+        disabled={loading}
+      >
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
@@ -255,6 +276,76 @@ export default function RegisterScreen({ navigation }) {
       </TouchableOpacity>
 
     </ScrollView>
+
+    <Modal
+      visible={mostrarConsentimiento}
+      animationType="fade"
+      transparent
+      onRequestClose={() => {}}
+    >
+      <View style={styles.modalFondo}>
+        <View style={styles.modalTarjeta}>
+          <ScrollView
+            style={styles.modalScroll}
+            contentContainerStyle={styles.modalScrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={styles.modalTitulo}>Consentimiento informado</Text>
+
+            <Text style={styles.modalParrafo}>
+              Antes de continuar, es importante que conozcas lo siguiente:
+            </Text>
+
+            <Text style={styles.modalParrafo}>
+              La información que proporciones en <Text style={styles.modalNegrita}>ExpresaTE-SVB</Text> será
+              utilizada exclusivamente con fines de investigación dentro del proyecto. Tu participación es{' '}
+              <Text style={styles.modalNegrita}>voluntaria</Text> y puedes decidir no participar o retirar tu
+              consentimiento en cualquier momento, sin consecuencias.
+            </Text>
+
+            <Text style={[styles.modalParrafo, { fontWeight: '700', color: '#2D1A4A' }]}>
+              Al continuar, declaras que:
+            </Text>
+
+            <View style={styles.modalListaItem}>
+              <Text style={styles.modalBullet}>•</Text>
+              <Text style={styles.modalListaTexto}>Has leído y comprendido la información proporcionada.</Text>
+            </View>
+            <View style={styles.modalListaItem}>
+              <Text style={styles.modalBullet}>•</Text>
+              <Text style={styles.modalListaTexto}>Aceptas participar voluntariamente en el estudio.</Text>
+            </View>
+            <View style={styles.modalListaItem}>
+              <Text style={styles.modalBullet}>•</Text>
+              <Text style={styles.modalListaTexto}>
+                Autorizas el uso de la información proporcionada para los fines establecidos en el proyecto de investigación.
+              </Text>
+            </View>
+            <View style={styles.modalListaItem}>
+              <Text style={styles.modalBullet}>•</Text>
+              <Text style={styles.modalListaTexto}>
+                Comprendes que tus respuestas serán tratadas de manera{' '}
+                <Text style={styles.modalNegrita}>confidencial</Text> y utilizadas únicamente para los fines del estudio.
+              </Text>
+            </View>
+
+            <Text style={[styles.modalParrafo, { fontWeight: '700', color: '#2D1A4A', marginTop: 8 }]}>
+              ¿Aceptas participar y proporcionar la información necesaria para el desarrollo de esta investigación?
+            </Text>
+          </ScrollView>
+
+          <View style={styles.modalBotonesRow}>
+            <TouchableOpacity style={styles.modalBotonRechazar} onPress={handleNoAceptarConsentimiento}>
+              <Text style={styles.modalBotonRechazarTexto}>No acepto</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalBotonAceptar} onPress={handleAceptarConsentimiento}>
+              <Text style={styles.modalBotonAceptarTexto}>Aceptar y continuar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    </>
   );
 }
 
@@ -328,6 +419,91 @@ const styles = StyleSheet.create({
   },
   eyeBtn: {
     padding: 4,
+  },
+  modalFondo: {
+    flex: 1,
+    backgroundColor: 'rgba(45, 26, 74, 0.55)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalTarjeta: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    maxHeight: '85%',
+    paddingTop: 24,
+    paddingHorizontal: 20,
+    overflow: 'hidden',
+  },
+  modalScroll: {
+    maxHeight: '100%',
+  },
+  modalScrollContent: {
+    paddingBottom: 16,
+  },
+  modalTitulo: {
+    fontSize: 19,
+    fontWeight: '700',
+    color: '#3C2066',
+    marginBottom: 14,
+  },
+  modalParrafo: {
+    fontSize: 13.5,
+    color: '#4A3B63',
+    lineHeight: 20,
+    marginBottom: 14,
+  },
+  modalNegrita: {
+    fontWeight: '700',
+    color: '#3C2066',
+  },
+  modalListaItem: {
+    flexDirection: 'row',
+    marginBottom: 10,
+    paddingRight: 4,
+  },
+  modalBullet: {
+    fontSize: 14,
+    color: '#7C3DB8',
+    marginRight: 8,
+    lineHeight: 20,
+  },
+  modalListaTexto: {
+    flex: 1,
+    fontSize: 13.5,
+    color: '#4A3B63',
+    lineHeight: 20,
+  },
+  modalBotonesRow: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#EEE2F7',
+  },
+  modalBotonRechazar: {
+    flex: 1,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: '#C9B3E0',
+    paddingVertical: 13,
+    alignItems: 'center',
+  },
+  modalBotonRechazarTexto: {
+    color: '#8A7397',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modalBotonAceptar: {
+    flex: 1.3,
+    borderRadius: 24,
+    backgroundColor: '#7C3DB8',
+    paddingVertical: 13,
+    alignItems: 'center',
+  },
+  modalBotonAceptarTexto: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
   },
   boton: {
     marginTop: 28,

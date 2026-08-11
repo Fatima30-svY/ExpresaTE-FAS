@@ -64,28 +64,31 @@ export default function LoginScreen({ navigation }) {
     }).start();
   };
 
-  const handleAcceder = async () => {
-    if (!usuario || !contrasena) {
-      alert('Ingresa tu correo y tu contraseña.');
-      return;
-    }
+ const handleAcceder = async () => {
+  const usuarioLimpio = usuario.trim();
+  const contrasenaLimpia = contrasena.trim();
 
-    setLoading(true);
+  if (!usuarioLimpio || !contrasenaLimpia) {
+    alert('Ingresa tu correo y tu contraseña.');
+    return;
+  }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: usuario,
-      password: contrasena,
-    });
+  setLoading(true);
 
-    setLoading(false);
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: usuarioLimpio,
+    password: contrasenaLimpia,
+  });
 
-    if (error) {
-      alert(traducirErrorLogin(error));
-      return;
-    }
+  setLoading(false);
 
-    navigation.navigate('PantallaPrincipal');
-  };
+  if (error) {
+    alert(traducirErrorLogin(error));
+    return;
+  }
+
+  navigation.navigate('PantallaPrincipal');
+};
 
   const handleNoTengocuenta = () => {
     navigation.navigate('RegistrarCuenta');
